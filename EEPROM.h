@@ -1,18 +1,14 @@
-/*
- * EEPROM.h
- *
- *  Created on: Apr 19, 2018
- *      Author: leenovoz510
- */
+
 
 #ifndef EEPROM_H_
 #define EEPROM_H_
 
-
-
+#include "mainHeader.h"
 #include "I2C.h"
 
-void EEPROM_Init(void);
-void EEPROM_Write_Byte(char dev_addr,char dev_loc,char dev_data);
-uint8 EEPROM_Read_Byte(char dev_addr,char dev_loc);
+void EEPROM_Init();
+unsigned char EEPROM_Read(unsigned short Address, unsigned char * Data);
+unsigned char EEPROM_Write(unsigned short Address, unsigned char Data);
+
+
 #endif /* EEPROM_H_ */
