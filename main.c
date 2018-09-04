@@ -5,9 +5,6 @@
  *      Author: leenovoz510
  */
 
-#include <avr/io.h>
-#include <avr/interrupt.h>
-#include <avr/delay.h>
 #include "EEPROM.h"
 #include "LCD.h"
 
@@ -16,15 +13,16 @@
 int main(void){
 
 
-		char val = 0;
+		unsigned char val = 0;
 		LCD_Init();
 		_delay_ms(10);
 		LCD_Clear();
 		/* Init EEPROM */
 		EEPROM_Init();
 
-		EEPROM_Write_Byte(0x01 ,0 ,'B'); /* Write 0x0F in the external EEPROM */
-		val = EEPROM_Read_Byte(0x01 , 0);  /* Read 0x0F from the external EEPROM */
+		EEPROM_Write(0x0311,0x01); /* Write 0x0F in the external EEPROM */
+		_delay_ms(100);
+		EEPROM_Read(0x0311, &val); /* Read 0x0F from the external EEPROM */
 		while(1)
 		{
 			Go_to(1 , 1);
