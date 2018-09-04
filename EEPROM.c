@@ -1,62 +1,57 @@
-/*
- * EEPROM.c
- *
- *  Created on: Apr 19, 2018
- *      Author: leenovoz510
- */
-
 #include "EEPROM.h"
-
-void EEPROM_Init(void)
-{
-	I2C_Init(); // just initialize the TWI module inside the MC
+void EEPROM_Init(){
+	I2C_Init();
 }
-
-void EEPROM_Write_Byte(char dev_addr,char dev_loc,char dev_data)
-{
+unsigned char EEPROM_Read(unsigned short Address, unsigned char *Data){
 	I2C_Start();
+	if(I2C_GetStatus()!= TW_START){
+		return 0;
+	}
 
-    //write the device address and so we need to get A8 A9 A10 address bits and R/W=0 (write)
-    I2C_SendData(dev_addr);
-
-    //send the required location address
-    I2C_SendData(dev_loc);
-
-    //write byte to eeprom
-    I2C_SendData(dev_data);
-
-
-    I2C_End();
-
-}
-
-uint8 EEPROM_Read_Byte(char dev_addr,char dev_loc){
-	uint8 Data;
+	I2C_Write((unsigned char)(0xA0 | ((Address & 0x0700)>>7)));
+	if(I2C_GetStatus()!= TW_MT_SLA_W_ACK){
+		return 0;
+	}
+	I2C_Write((unsigned char)(Address));
+	if(I2C_GetStatus()!= TW_MT_DATA_ACK){
+			return 0;
+	}
 	I2C_Start();
+	if(I2C_GetStatus()!= TW_REP_START){
+		return 0;
+	}
+	I2C_Write((unsigned char)(0xA0 | ((Address & 0x0700)>>7))|1);
+	if(I2C_GetStatus()!= TW_MT_SLA_R_ACK){
+		return 0;
+	}
+	*Data = I2C_ReadNACK();
+	if(I2C_GetStatus()!= TW_MR_DATA_NACK){
+		return 0;
+	}
 
-    //write the device address and so we need to get A8 A9 A10 address bits and R/W=0 (write)
-    I2C_SendData(dev_addr);
+	I2C_Stop();
+	return 1;
 
-    //send the required location address
-    I2C_SendData(dev_loc);
-
-
-    //send a repeated start
-    I2C_Start();
-
-
-    //write the device address and so we need to get A8 A9 A10 address bits and R/W=1 (Read)
-    I2C_SendData(dev_addr|0x01);
-    Data = I2C_ReadData_With_NonAK();
-
-    I2C_End();
-    return Data;
 }
+unsigned char EEPROM_Write(unsigned short Address, unsigned char Data){
+	I2C_Start();
+	if(I2C_GetStatus() != TW_START){
+		return 0;
+	}
 
+	I2C_Write((unsigned char)(0xA0 | ((Address & 0x0700)>>7)));
+	if(I2C_GetStatus()!= TW_MT_SLA_W_ACK){
+		return 0;
+	}
+	I2C_Write((unsigned char)(Address));
+	if(I2C_GetStatus()!= TW_MT_DATA_ACK){
+			return 0;
+	}
+	I2C_Write(Data);
+	if(I2C_GetStatus()!= TW_MT_DATA_ACK){
+			return 0;
+	}
 
-
-
-
-
-
-
+	I2C_Stop();
+	return 1;
+}
